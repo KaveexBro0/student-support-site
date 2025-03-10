@@ -26,3 +26,17 @@ document.getElementById('help-btn').addEventListener('click', function() {
     // Reset the input field
     document.getElementById('pc-id').value = '';
 });
+// admin login
+document.getElementById('login-btn').addEventListener('click', async () => {
+    const email = document.getElementById('admin-email').value;
+    const password = document.getElementById('admin-password').value;
+    
+    try {
+        await firebase.auth().signInWithEmailAndPassword(email, password);
+        document.getElementById('admin-login').style.display = 'none';
+        document.getElementById('admin-section').style.display = 'block';
+        getHelpRequests(); // Get real-time help requests after login
+    } catch (error) {
+        alert('Error logging in: ' + error.message);
+    }
+});
