@@ -40,3 +40,58 @@ document.getElementById('login-btn').addEventListener('click', async () => {
         alert('Error logging in: ' + error.message);
     }
 });
+// When student clicks the 'Help Me!' button
+document.getElementById('help-btn').addEventListener('click', async () => {
+    const pcId = document.getElementById('pc-id').value;
+
+    if (pcId === '') {
+        alert('Please enter your PC ID!');
+        return;
+    }
+
+    const message = `Student at PC ID: ${pcId} needs help!`;
+
+    // Save the help request to Firestore
+    await db.collection('help_requests').add({
+        pcId: pcId,
+        message: message,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Clear input
+    document.getElementById('pc-id').value = '';
+});
+// Get real-time help requests for the admin
+function getHelpRequests() {
+    db.collection('help_requests')
+        .orderBy('timestamp', 'desc')
+        .onSnapshot(snapshot => {
+            const helpRequests = document.getElementById('help-requests');
+            helpRequests.innerHTML = ''; // Clear the current requests
+
+            snapshot.forEach(doc => {
+                const request = doc.data();
+                const pcId = request.pcId;
+                const message = request.message;
+
+                // Display the help request
+                helpRequests.innerHTML += `
+                    <div>
+                        <p>${message}</p>
+                        <button class="helped-btn" data-id="${doc.id}">Helped</button>
+                    </div>
+                `;
+            });
+
+            // Handle 'Helped' button click
+            const helpedBtns = document.querySelectorAll('.helped-btn');
+            helpedBtns.forEach(button => {
+                button.addEventListener('click', async () => {
+                    const requestId = button.getAttribute('data-id');
+
+                    // Delete the request from Firestore after it's helped
+                    await db.collection('help_requests').doc(requestId).delete();
+                });
+            });
+        });
+}
