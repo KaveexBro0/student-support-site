@@ -36,5 +36,20 @@
 
 <!-- Firebase Firestore -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+<!-- Admin Login Section -->
+<div id="admin-login">
+    <h2>Admin Login</h2>
+    <input type="email" id="admin-email" placeholder="Admin Email">
+    <input type="password" id="admin-password" placeholder="Password">
+    <button id="login-btn">Login</button>
+</div>
+
+<!-- Prefect Dashboard (This will only show after login) -->
+<div id="admin-section" style="display:none;">
+    <h2>Admin Dashboard</h2>
+    <div id="help-requests">
+        <p>No new requests yet!</p>
+    </div>
+</div>
 </body>
 </html>
