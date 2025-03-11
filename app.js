@@ -2,6 +2,7 @@
 import { auth, db } from "./firebaseConfig.js";
 import { 
     signInWithEmailAndPassword, 
+    signOut, 
     onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 import { 
@@ -12,12 +13,9 @@ import {
     serverTimestamp, 
     onSnapshot, 
     query, 
-    orderBy 
+    orderBy,
+    getDocs 
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-// Log to confirm Firebase is loaded
-console.log("Firebase Auth:", auth ? "Initialized" : "Not initialized");
-console.log("Firebase DB:", db ? "Initialized" : "Not initialized");
 
 // Handle Student Help Request
 document.getElementById('help-btn').addEventListener('click', async () => {
@@ -34,7 +32,13 @@ document.getElementById('help-btn').addEventListener('click', async () => {
             message: `Student at PC ID: ${pcId} needs help!`,
             timestamp: serverTimestamp()
         });
-        alert('Your request has been sent.');
+        const now = new Date().toLocaleTimeString();
+        const statusDiv = document.getElementById('request-status');
+        statusDiv.textContent = `Request submitted at ${now}`;
+        statusDiv.style.display = 'block';
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 5000); // Hide after 5 seconds
         document.getElementById('pc-id').value = '';
     } catch (error) {
         console.error('Error submitting request:', error.code, error.message);
@@ -53,13 +57,37 @@ document.getElementById('login-btn').addEventListener('click', async () => {
     }
 
     try {
-        console.log('Attempting login with:', email);
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        console.log('Login successful, user:', userCredential.user.email);
+        await signInWithEmailAndPassword(auth, email, password);
         alert('Login successful!');
     } catch (error) {
         console.error('Login error:', error.code, error.message);
         alert(`Login failed: ${error.message} (Code: ${error.code})`);
+    }
+});
+
+// Admin Logout
+document.getElementById('logout-btn').addEventListener('click', async () => {
+    try {
+        await signOut(auth);
+        alert('Logged out successfully!');
+    } catch (error) {
+        console.error('Logout error:', error);
+        alert('Logout failed: ' + error.message);
+    }
+});
+
+// Clear All Requests
+document.getElementById('clear-all-btn').addEventListener('click', async () => {
+    if (confirm('Are you sure you want to clear all requests?')) {
+        try {
+            const querySnapshot = await getDocs(collection(db, 'help_requests'));
+            const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(deletePromises);
+            console.log('All requests cleared');
+        } catch (error) {
+            console.error('Error clearing requests:', error);
+            alert('Failed to clear requests: ' + error.message);
+        }
     }
 });
 
@@ -68,12 +96,10 @@ onAuthStateChanged(auth, (user) => {
     const loginCard = document.getElementById('admin-login-card');
     const dashboardCard = document.getElementById('admin-dashboard-card');
     if (user) {
-        console.log('User logged in:', user.email);
         loginCard.classList.add('d-none');
         dashboardCard.classList.remove('d-none');
         getHelpRequests();
     } else {
-        console.log('No user logged in');
         loginCard.classList.remove('d-none');
         dashboardCard.classList.add('d-none');
     }
@@ -98,20 +124,22 @@ function getHelpRequests() {
         if (snapshot.empty) {
             helpRequestsContainer.innerHTML = '<p class="text-muted">No new requests yet!</p>';
         } else {
-            snapshot.forEach(docSnap => {
-                const request = docSnap.data();
-                const requestId = docSnap.id;
-                const timestamp = request.timestamp;
-                const date = timestamp ? new Date(timestamp.seconds * 1000) : new Date();
-                const timeString = date.toLocaleTimeString();
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === 'added') {
+                    const request = change.doc.data();
+                    const requestId = change.doc.id;
+                    const timestamp = request.timestamp;
+                    const date = timestamp ? new Date(timestamp.seconds * 1000) : new Date();
+                    const timeString = date.toLocaleTimeString();
 
-                const requestElement = document.createElement('div');
-                requestElement.classList.add('alert', 'alert-info', 'd-flex', 'justify-content-between', 'align-items-center');
-                requestElement.innerHTML = `
-                    <span>${request.message} - ${timeString}</span>
-                    <button class="btn btn-sm btn-success helped-btn" data-id="${requestId}">Helped</button>
-                `;
-                helpRequestsContainer.appendChild(requestElement);
+                    const requestElement = document.createElement('div');
+                    requestElement.classList.add('alert', 'alert-info', 'd-flex', 'justify-content-between', 'align-items-center', 'slide-in');
+                    requestElement.innerHTML = `
+                        <span>${request.message} - ${timeString}</span>
+                        <button class="btn btn-sm btn-success helped-btn" data-id="${requestId}">Helped</button>
+                    `;
+                    helpRequestsContainer.prepend(requestElement); // Add at top
+                }
             });
         }
     });
