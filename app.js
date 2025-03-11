@@ -92,33 +92,54 @@ document.getElementById('clear-all-btn').addEventListener('click', async () => {
 });
 
 // Monitor Admin Login State
-let unsubscribe = null; // Store the snapshot listener for cleanup
+let unsubscribe = null;
 onAuthStateChanged(auth, (user) => {
     const loginCard = document.getElementById('admin-login-card');
     const dashboardCard = document.getElementById('admin-dashboard-card');
     if (user) {
         loginCard.classList.add('d-none');
         dashboardCard.classList.remove('d-none');
-        if (!unsubscribe) { // Only start listener if not already running
+        if (!unsubscribe) {
             unsubscribe = getHelpRequests();
         }
     } else {
         loginCard.classList.remove('d-none');
         dashboardCard.classList.add('d-none');
-        if (unsubscribe) { // Cleanup listener on logout
+        if (unsubscribe) {
             unsubscribe();
             unsubscribe = null;
-            document.getElementById('help-requests').innerHTML = ''; // Clear on logout
+            document.getElementById('help-requests').innerHTML = '';
+            document.getElementById('notifications-container').innerHTML = ''; // Clear notifications
         }
     }
 });
 
+// Function to show a notification
+function showNotification(message, timestamp) {
+    const notificationsContainer = document.getElementById('notifications-container');
+    const notificationId = `notification-${Date.now()}`;
+    const date = timestamp ? new Date(timestamp.seconds * 1000) : new Date();
+    const timeString = date.toLocaleTimeString();
+
+    const notification = document.createElement('div');
+    notification.classList.add('notification', 'bg-primary', 'text-white', 'p-2', 'mb-2', 'slide-down');
+    notification.id = notificationId;
+    notification.innerHTML = `<span>${message} - ${timeString}</span>`;
+    notificationsContainer.prepend(notification); // Stack new notifications on top
+
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('slide-down');
+        notification.classList.add('slide-up');
+        setTimeout(() => notification.remove(), 300); // Match slide-up duration
+    }, 5000);
+}
+
 // Fetch & Display Help Requests in Real-time
 function getHelpRequests() {
     const helpRequestsContainer = document.getElementById('help-requests');
-    const displayedRequests = new Set(); // Track rendered request IDs
+    const displayedRequests = new Set();
 
-    // Single event listener for "Helped" buttons
     helpRequestsContainer.addEventListener('click', (e) => {
         if (e.target.classList.contains('helped-btn')) {
             const requestId = e.target.getAttribute('data-id');
@@ -130,7 +151,7 @@ function getHelpRequests() {
 
     const q = query(collection(db, 'help_requests'), orderBy('timestamp', 'desc'));
     return onSnapshot(q, (snapshot) => {
-        helpRequestsContainer.innerHTML = ''; // Clear and re-render all requests
+        helpRequestsContainer.innerHTML = '';
         if (snapshot.empty) {
             helpRequestsContainer.innerHTML = '<p class="text-muted">No new requests yet!</p>';
             displayedRequests.clear();
@@ -146,9 +167,9 @@ function getHelpRequests() {
                 requestElement.classList.add('alert', 'alert-info', 'd-flex', 'justify-content-between', 'align-items-center');
                 requestElement.setAttribute('data-request-id', requestId);
                 
-                // Apply slide-in only for new requests
                 if (!displayedRequests.has(requestId)) {
                     requestElement.classList.add('slide-in');
+                    showNotification(request.message, timestamp); // Show notification
                 }
 
                 requestElement.innerHTML = `
