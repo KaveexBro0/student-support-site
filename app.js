@@ -15,6 +15,10 @@ import {
     orderBy 
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
+// Log to confirm Firebase is loaded
+console.log("Firebase Auth:", auth ? "Initialized" : "Not initialized");
+console.log("Firebase DB:", db ? "Initialized" : "Not initialized");
+
 // Handle Student Help Request
 document.getElementById('help-btn').addEventListener('click', async () => {
     const pcId = document.getElementById('pc-id').value.trim();
@@ -33,7 +37,7 @@ document.getElementById('help-btn').addEventListener('click', async () => {
         alert('Your request has been sent.');
         document.getElementById('pc-id').value = '';
     } catch (error) {
-        console.error('Error submitting request:', error);
+        console.error('Error submitting request:', error.code, error.message);
         alert('Failed to send request: ' + error.message);
     }
 });
@@ -43,12 +47,19 @@ document.getElementById('login-btn').addEventListener('click', async () => {
     const email = document.getElementById('admin-email').value.trim();
     const password = document.getElementById('admin-password').value.trim();
 
+    if (email === '' || password === '') {
+        alert('Please enter both email and password!');
+        return;
+    }
+
     try {
-        await signInWithEmailAndPassword(auth, email, password);
+        console.log('Attempting login with:', email);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log('Login successful, user:', userCredential.user.email);
         alert('Login successful!');
     } catch (error) {
         console.error('Login error:', error.code, error.message);
-        alert('Login failed: ' + error.message);
+        alert(`Login failed: ${error.message} (Code: ${error.code})`);
     }
 });
 
@@ -57,10 +68,12 @@ onAuthStateChanged(auth, (user) => {
     const loginCard = document.getElementById('admin-login-card');
     const dashboardCard = document.getElementById('admin-dashboard-card');
     if (user) {
+        console.log('User logged in:', user.email);
         loginCard.classList.add('d-none');
         dashboardCard.classList.remove('d-none');
         getHelpRequests();
     } else {
+        console.log('No user logged in');
         loginCard.classList.remove('d-none');
         dashboardCard.classList.add('d-none');
     }
@@ -70,7 +83,6 @@ onAuthStateChanged(auth, (user) => {
 function getHelpRequests() {
     const helpRequestsContainer = document.getElementById('help-requests');
 
-    // Single event listener for all "Helped" buttons
     helpRequestsContainer.addEventListener('click', (e) => {
         if (e.target.classList.contains('helped-btn')) {
             const requestId = e.target.getAttribute('data-id');
