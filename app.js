@@ -1,5 +1,5 @@
 // Import Firebase modules
-import { auth, db } from "./firebaseConfig.js";
+import { auth, db, messaging } from "./firebaseConfig.js";
 import { 
     signInWithEmailAndPassword, 
     signOut, 
@@ -16,6 +16,20 @@ import {
     orderBy,
     getDocs 
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js";
+
+// Dark Mode Toggle
+const toggleButton = document.getElementById('dark-mode-toggle');
+const currentTheme = localStorage.getItem('theme') || 'light';
+document.documentElement.setAttribute('data-theme', currentTheme);
+toggleButton.textContent = currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+
+toggleButton.addEventListener('click', () => {
+    const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    toggleButton.textContent = newTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+});
 
 // Handle Student Help Request
 document.getElementById('help-btn').addEventListener('click', async () => {
@@ -36,12 +50,10 @@ document.getElementById('help-btn').addEventListener('click', async () => {
         const statusDiv = document.getElementById('request-status');
         statusDiv.textContent = `Request submitted at ${now}`;
         statusDiv.style.display = 'block';
-        setTimeout(() => {
-            statusDiv.style.display = 'none';
-        }, 5000); // Hide after 5 seconds
+        setTimeout(() => statusDiv.style.display = 'none', 5000);
         document.getElementById('pc-id').value = '';
     } catch (error) {
-        console.error('Error submitting request:', error.code, error.message);
+        console.error('Error submitting request:', error);
         alert('Failed to send request: ' + error.message);
     }
 });
@@ -60,7 +72,7 @@ document.getElementById('login-btn').addEventListener('click', async () => {
         await signInWithEmailAndPassword(auth, email, password);
         alert('Login successful!');
     } catch (error) {
-        console.error('Login error:', error.code, error.message);
+        console.error('Login error:', error);
         alert(`Login failed: ${error.message} (Code: ${error.code})`);
     }
 });
@@ -91,6 +103,22 @@ document.getElementById('clear-all-btn').addEventListener('click', async () => {
     }
 });
 
+// Request Notification Permission and Get Token
+async function requestNotificationPermission() {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            const token = await getToken(messaging, { 
+                vapidKey: 'BN8_pjYV0tMuk9e6QFHGWYAkfsFSvy4IZvu6_WeNnu4UQOoo6eh8EHx_4UyOiEgixb-emTP8RGLgEpa31C27XFM' 
+            });
+            console.log('Notification token:', token);
+            await addDoc(collection(db, 'admin_tokens'), { token, userId: auth.currentUser.uid });
+        }
+    } catch (error) {
+        console.error('Error getting notification permission:', error);
+    }
+}
+
 // Monitor Admin Login State
 let unsubscribe = null;
 onAuthStateChanged(auth, (user) => {
@@ -101,6 +129,7 @@ onAuthStateChanged(auth, (user) => {
         dashboardCard.classList.remove('d-none');
         if (!unsubscribe) {
             unsubscribe = getHelpRequests();
+            requestNotificationPermission();
         }
     } else {
         loginCard.classList.remove('d-none');
@@ -109,12 +138,12 @@ onAuthStateChanged(auth, (user) => {
             unsubscribe();
             unsubscribe = null;
             document.getElementById('help-requests').innerHTML = '';
-            document.getElementById('notifications-container').innerHTML = ''; // Clear notifications
+            document.getElementById('notifications-container').innerHTML = '';
         }
     }
 });
 
-// Function to show a notification
+// Show In-App Notification
 function showNotification(message, timestamp) {
     const notificationsContainer = document.getElementById('notifications-container');
     const notificationId = `notification-${Date.now()}`;
@@ -122,17 +151,45 @@ function showNotification(message, timestamp) {
     const timeString = date.toLocaleTimeString();
 
     const notification = document.createElement('div');
-    notification.classList.add('notification', 'bg-primary', 'text-white', 'p-2', 'mb-2', 'slide-down');
+    notification.classList.add('notification', 'p-2', 'mb-2', 'slide-down');
     notification.id = notificationId;
     notification.innerHTML = `<span>${message} - ${timeString}</span>`;
-    notificationsContainer.prepend(notification); // Stack new notifications on top
+    notificationsContainer.prepend(notification);
 
-    // Auto-dismiss after 5 seconds
     setTimeout(() => {
         notification.classList.remove('slide-down');
         notification.classList.add('slide-up');
-        setTimeout(() => notification.remove(), 300); // Match slide-up duration
+        setTimeout(() => notification.remove(), 300);
     }, 5000);
+}
+
+// Send Push Notification to Admin
+async function sendPushNotification(message, timeString) {
+    const adminTokensSnapshot = await getDocs(collection(db, 'admin_tokens'));
+    const tokens = adminTokensSnapshot.docs.map(doc => doc.data().token);
+
+    if (tokens.length === 0) return;
+
+    const payload = {
+        notification: {
+            title: 'New Help Request',
+            body: `${message} - ${timeString}`
+        }
+    };
+
+    tokens.forEach(token => {
+        fetch('https://fcm.googleapis.com/fcm/send', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'key=YOUR_SERVER_KEY_HERE', // Replace with your Server Key
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                to: token,
+                ...payload
+            })
+        }).catch(error => console.error('Error sending push notification:', error));
+    });
 }
 
 // Fetch & Display Help Requests in Real-time
@@ -169,7 +226,8 @@ function getHelpRequests() {
                 
                 if (!displayedRequests.has(requestId)) {
                     requestElement.classList.add('slide-in');
-                    showNotification(request.message, timestamp); // Show notification
+                    showNotification(request.message, timestamp);
+                    sendPushNotification(request.message, timeString);
                 }
 
                 requestElement.innerHTML = `
