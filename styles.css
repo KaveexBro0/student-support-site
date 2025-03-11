@@ -1,8 +1,44 @@
+:root {
+    /* Light mode defaults */
+    --bg-color: #f4f4f4;
+    --text-color: #333;
+    --card-bg: #fff;
+    --navbar-bg: #f8f9fa;
+    --primary-btn-bg: #0d6efd;
+    --primary-btn-text: #fff;
+    --success-btn-bg: #198754;
+    --danger-btn-bg: #dc3545;
+    --warning-btn-bg: #ffc107;
+    --alert-info-bg: #cce5ff;
+    --alert-info-text: #0c5460;
+    --notification-bg: #0d6efd;
+    --notification-text: #fff;
+}
+
+[data-theme="dark"] {
+    /* Dark mode overrides */
+    --bg-color: #1a1a1a;
+    --text-color: #e0e0e0;
+    --card-bg: #2c2c2c;
+    --navbar-bg: #333;
+    --primary-btn-bg: #4a90e2;
+    --primary-btn-text: #fff;
+    --success-btn-bg: #28a745;
+    --danger-btn-bg: #dc3545;
+    --warning-btn-bg: #ffca2c;
+    --alert-info-bg: #375a7f;
+    --alert-info-text: #e0e0e0;
+    --notification-bg: #4a90e2;
+    --notification-text: #fff;
+}
+
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     margin: 0;
     padding: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -10,32 +46,47 @@ body {
     max-width: 800px;
 }
 
+.navbar {
+    background-color: var(--navbar-bg);
+}
+
 h2 {
-    color: #333;
+    color: var(--text-color);
 }
 
 .card {
+    background-color: var(--card-bg);
     border-radius: 8px;
-    transition: opacity 0.3s ease-in-out;
+    transition: background-color 0.3s ease;
 }
 
 .card:hover {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
+.form-control {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--text-color);
+}
+
 #help-requests .alert {
     margin-top: 10px;
+    background-color: var(--alert-info-bg);
+    color: var(--alert-info-text);
 }
 
 /* Notification Styles */
 #notifications-container {
-    pointer-events: none; /* Allows clicks to pass through to dashboard */
+    pointer-events: none;
 }
 
 .notification {
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     opacity: 0.9;
+    background-color: var(--notification-bg);
+    color: var(--notification-text);
 }
 
 /* Fade-In Animation for Cards */
@@ -51,7 +102,22 @@ h2 {
 
 /* Button Animations */
 .btn {
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+    background-color: var(--primary-btn-bg);
+    color: var(--primary-btn-text);
+}
+
+.btn-success {
+    background-color: var(--success-btn-bg);
+}
+
+.btn-danger {
+    background-color: var(--danger-btn-bg);
+}
+
+.btn-warning {
+    background-color: var(--warning-btn-bg);
+    color: #000;
 }
 
 .btn:hover {
