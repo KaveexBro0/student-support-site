@@ -1,5 +1,5 @@
 // Import Firebase modules
-import { auth, db } from "./firebaseConfig.js";
+import { auth, db, messaging } from "./firebaseConfig.js";
 import { 
     signInWithEmailAndPassword, 
     signOut, 
@@ -16,6 +16,7 @@ import {
     orderBy,
     getDocs 
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js";
 
 // Handle Student Help Request
 document.getElementById('help-btn').addEventListener('click', async () => {
@@ -38,7 +39,7 @@ document.getElementById('help-btn').addEventListener('click', async () => {
         statusDiv.style.display = 'block';
         setTimeout(() => {
             statusDiv.style.display = 'none';
-        }, 5000); // Hide after 5 seconds
+        }, 5000);
         document.getElementById('pc-id').value = '';
     } catch (error) {
         console.error('Error submitting request:', error.code, error.message);
@@ -91,6 +92,21 @@ document.getElementById('clear-all-btn').addEventListener('click', async () => {
     }
 });
 
+// Request Notification Permission and Get Token
+async function requestNotificationPermission() {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            const token = await getToken(messaging, { vapidKey: 'YOUR_VAPID_KEY_HERE' }); // Replace with your VAPID key
+            console.log('Notification token:', token);
+            // Save this token to Firestore for the admin to receive notifications
+            await addDoc(collection(db, 'admin_tokens'), { token, userId: auth.currentUser.uid });
+        }
+    } catch (error) {
+        console.error('Error getting notification permission:', error);
+    }
+}
+
 // Monitor Admin Login State
 let unsubscribe = null;
 onAuthStateChanged(auth, (user) => {
@@ -101,6 +117,7 @@ onAuthStateChanged(auth, (user) => {
         dashboardCard.classList.remove('d-none');
         if (!unsubscribe) {
             unsubscribe = getHelpRequests();
+            requestNotificationPermission(); // Request permission on login
         }
     } else {
         loginCard.classList.remove('d-none');
@@ -109,12 +126,12 @@ onAuthStateChanged(auth, (user) => {
             unsubscribe();
             unsubscribe = null;
             document.getElementById('help-requests').innerHTML = '';
-            document.getElementById('notifications-container').innerHTML = ''; // Clear notifications
+            document.getElementById('notifications-container').innerHTML = '';
         }
     }
 });
 
-// Function to show a notification
+// Show In-App Notification
 function showNotification(message, timestamp) {
     const notificationsContainer = document.getElementById('notifications-container');
     const notificationId = `notification-${Date.now()}`;
@@ -125,13 +142,12 @@ function showNotification(message, timestamp) {
     notification.classList.add('notification', 'bg-primary', 'text-white', 'p-2', 'mb-2', 'slide-down');
     notification.id = notificationId;
     notification.innerHTML = `<span>${message} - ${timeString}</span>`;
-    notificationsContainer.prepend(notification); // Stack new notifications on top
+    notificationsContainer.prepend(notification);
 
-    // Auto-dismiss after 5 seconds
     setTimeout(() => {
         notification.classList.remove('slide-down');
         notification.classList.add('slide-up');
-        setTimeout(() => notification.remove(), 300); // Match slide-up duration
+        setTimeout(() => notification.remove(), 300);
     }, 5000);
 }
 
@@ -169,7 +185,8 @@ function getHelpRequests() {
                 
                 if (!displayedRequests.has(requestId)) {
                     requestElement.classList.add('slide-in');
-                    showNotification(request.message, timestamp); // Show notification
+                    showNotification(request.message, timestamp); // In-app notification
+                    sendPushNotification(request.message, timeString); // System notification
                 }
 
                 requestElement.innerHTML = `
@@ -180,5 +197,34 @@ function getHelpRequests() {
                 displayedRequests.add(requestId);
             });
         }
+    });
+}
+
+// Send Push Notification to Admin
+async function sendPushNotification(message, timeString) {
+    const adminTokensSnapshot = await getDocs(collection(db, 'admin_tokens'));
+    const tokens = adminTokensSnapshot.docs.map(doc => doc.data().token);
+
+    if (tokens.length === 0) return;
+
+    const payload = {
+        notification: {
+            title: 'New Help Request',
+            body: `${message} - ${timeString}`
+        }
+    };
+
+    tokens.forEach(token => {
+        fetch('https://fcm.googleapis.com/fcm/send', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'key=YOUR_SERVER_KEY_HERE', // Replace with your FCM Server Key
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                to: token,
+                ...payload
+            })
+        }).catch(error => console.error('Error sending push notification:', error));
     });
 }
