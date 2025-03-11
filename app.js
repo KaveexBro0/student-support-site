@@ -108,7 +108,9 @@ onAuthStateChanged(auth, (user) => {
 // Fetch & Display Help Requests in Real-time
 function getHelpRequests() {
     const helpRequestsContainer = document.getElementById('help-requests');
+    const displayedRequests = new Set(); // Track rendered request IDs
 
+    // Single event listener for "Helped" buttons
     helpRequestsContainer.addEventListener('click', (e) => {
         if (e.target.classList.contains('helped-btn')) {
             const requestId = e.target.getAttribute('data-id');
@@ -120,27 +122,41 @@ function getHelpRequests() {
 
     const q = query(collection(db, 'help_requests'), orderBy('timestamp', 'desc'));
     onSnapshot(q, (snapshot) => {
-        helpRequestsContainer.innerHTML = '';
+        // Only clear container if no requests exist
         if (snapshot.empty) {
             helpRequestsContainer.innerHTML = '<p class="text-muted">No new requests yet!</p>';
-        } else {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === 'added') {
+            displayedRequests.clear();
+            return;
+        }
+
+        snapshot.docChanges().forEach((change) => {
+            const requestId = change.doc.id;
+
+            if (change.type === 'added') {
+                if (!displayedRequests.has(requestId)) {
                     const request = change.doc.data();
-                    const requestId = change.doc.id;
                     const timestamp = request.timestamp;
                     const date = timestamp ? new Date(timestamp.seconds * 1000) : new Date();
                     const timeString = date.toLocaleTimeString();
 
                     const requestElement = document.createElement('div');
                     requestElement.classList.add('alert', 'alert-info', 'd-flex', 'justify-content-between', 'align-items-center', 'slide-in');
+                    requestElement.setAttribute('data-request-id', requestId); // Unique identifier
                     requestElement.innerHTML = `
                         <span>${request.message} - ${timeString}</span>
                         <button class="btn btn-sm btn-success helped-btn" data-id="${requestId}">Helped</button>
                     `;
                     helpRequestsContainer.prepend(requestElement); // Add at top
+                    displayedRequests.add(requestId);
                 }
-            });
-        }
+            } else if (change.type === 'removed') {
+                const element = helpRequestsContainer.querySelector(`[data-request-id="${requestId}"]`);
+                if (element) {
+                    element.classList.add('slide-out');
+                    setTimeout(() => element.remove(), 300); // Match slide-out animation duration
+                    displayedRequests.delete(requestId);
+                }
+            }
+        });
     });
 }
