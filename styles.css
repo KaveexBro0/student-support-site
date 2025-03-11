@@ -7,12 +7,18 @@
     --primary-btn-bg: #0d6efd;
     --primary-btn-text: #fff;
     --success-btn-bg: #198754;
+    --success-btn-text: #fff;
     --danger-btn-bg: #dc3545;
+    --danger-btn-text: #fff;
     --warning-btn-bg: #ffc107;
+    --warning-btn-text: #000;
     --alert-info-bg: #cce5ff;
     --alert-info-text: #0c5460;
     --notification-bg: #0d6efd;
     --notification-text: #fff;
+    --input-bg: #fff;
+    --input-text: #333;
+    --input-border: #ced4da;
 }
 
 [data-theme="dark"] {
@@ -24,12 +30,18 @@
     --primary-btn-bg: #4a90e2;
     --primary-btn-text: #fff;
     --success-btn-bg: #28a745;
+    --success-btn-text: #fff;
     --danger-btn-bg: #dc3545;
+    --danger-btn-text: #fff;
     --warning-btn-bg: #ffca2c;
+    --warning-btn-text: #000;
     --alert-info-bg: #375a7f;
     --alert-info-text: #e0e0e0;
     --notification-bg: #4a90e2;
     --notification-text: #fff;
+    --input-bg: #333;
+    --input-text: #e0e0e0;
+    --input-border: #555;
 }
 
 body {
@@ -48,6 +60,11 @@ body {
 
 .navbar {
     background-color: var(--navbar-bg);
+    transition: background-color 0.3s ease;
+}
+
+.navbar-brand {
+    color: var(--text-color);
 }
 
 h2 {
@@ -65,15 +82,23 @@ h2 {
 }
 
 .form-control {
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    border-color: var(--text-color);
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--input-border);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.form-control:focus {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--primary-btn-bg);
 }
 
 #help-requests .alert {
     margin-top: 10px;
     background-color: var(--alert-info-bg);
     color: var(--alert-info-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Notification Styles */
@@ -87,6 +112,7 @@ h2 {
     opacity: 0.9;
     background-color: var(--notification-bg);
     color: var(--notification-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Fade-In Animation for Cards */
@@ -100,24 +126,38 @@ h2 {
     to { opacity: 1; }
 }
 
-/* Button Animations */
+/* Button Styles */
 .btn {
     transition: transform 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-primary {
     background-color: var(--primary-btn-bg);
     color: var(--primary-btn-text);
+    border-color: var(--primary-btn-bg);
 }
 
 .btn-success {
     background-color: var(--success-btn-bg);
+    color: var(--success-btn-text);
+    border-color: var(--success-btn-bg);
 }
 
 .btn-danger {
     background-color: var(--danger-btn-bg);
+    color: var(--danger-btn-text);
+    border-color: var(--danger-btn-bg);
 }
 
 .btn-warning {
     background-color: var(--warning-btn-bg);
-    color: #000;
+    color: var(--warning-btn-text);
+    border-color: var(--warning-btn-bg);
+}
+
+.btn-outline-secondary {
+    color: var(--text-color);
+    border-color: var(--text-color);
 }
 
 .btn:hover {
