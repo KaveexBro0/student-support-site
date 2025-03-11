@@ -1,95 +1,66 @@
-document.getElementById('help-btn').addEventListener('click', function() {
-    const pcId = document.getElementById('pc-id').value;
+// Firebase setup (Ensure firebaseConfig.js contains correct configuration)
+const db = firebase.firestore();
+const auth = firebase.auth();
 
-    // Validate PC ID
-    if (pcId === '') {
-        alert('Please enter your PC ID!');
-        return;
-    }
-
-    // Create a message for the admin
-    const message = `Student at PC ID: ${pcId} needs help!`;
-
-    // Show the message in the admin dashboard
-    const helpRequests = document.getElementById('help-requests');
-    helpRequests.innerHTML = `<p>${message}</p><button id="helped-btn">Helped</button>`;
-
-    // Show the admin section (for the prefect to see)
-    document.getElementById('admin-section').style.display = 'block';
-
-    // When the admin clicks 'Helped', confirm the help action
-    document.getElementById('helped-btn').addEventListener('click', function() {
-        helpRequests.innerHTML = `<p>Help provided to student at PC ID: ${pcId}.</p>`;
-        document.getElementById('pc-id').value = ''; // Clear the input field
-    });
-
-    // Reset the input field
-    document.getElementById('pc-id').value = '';
-});
-// admin login
-document.getElementById('login-btn').addEventListener('click', async () => {
-    const email = document.getElementById('admin-email').value;
-    const password = document.getElementById('admin-password').value;
-    
-    try {
-        await firebase.auth().signInWithEmailAndPassword(email, password);
-        document.getElementById('admin-login').style.display = 'none';
-        document.getElementById('admin-section').style.display = 'block';
-        getHelpRequests(); // Get real-time help requests after login
-    } catch (error) {
-        alert('Error logging in: ' + error.message);
-    }
-});
-// When student clicks the 'Help Me!' button
+// Handle Student Help Request
 document.getElementById('help-btn').addEventListener('click', async () => {
-    const pcId = document.getElementById('pc-id').value;
+    const pcId = document.getElementById('pc-id').value.trim();
 
     if (pcId === '') {
         alert('Please enter your PC ID!');
         return;
     }
 
-    const message = `Student at PC ID: ${pcId} needs help!`;
-
-    // Save the help request to Firestore
+    // Save the request to Firestore
     await db.collection('help_requests').add({
         pcId: pcId,
-        message: message,
+        message: `Student at PC ID: ${pcId} needs help!`,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Clear input
+    alert('Your request has been sent.');
     document.getElementById('pc-id').value = '';
 });
-// Get real-time help requests for the admin
+
+// Admin Login
+document.getElementById('login-btn').addEventListener('click', async () => {
+    const email = document.getElementById('admin-email').value.trim();
+    const password = document.getElementById('admin-password').value.trim();
+
+    try {
+        await auth.signInWithEmailAndPassword(email, password);
+        document.getElementById('admin-login-card').style.display = 'none';
+        document.getElementById('admin-dashboard-card').style.display = 'block';
+        getHelpRequests(); // Load help requests after login
+    } catch (error) {
+        alert('Login failed: ' + error.message);
+    }
+});
+
+// Fetch & Display Help Requests in Real-time
 function getHelpRequests() {
     db.collection('help_requests')
         .orderBy('timestamp', 'desc')
         .onSnapshot(snapshot => {
             const helpRequests = document.getElementById('help-requests');
-            helpRequests.innerHTML = ''; // Clear the current requests
+            helpRequests.innerHTML = ''; // Clear previous requests
 
             snapshot.forEach(doc => {
                 const request = doc.data();
-                const pcId = request.pcId;
-                const message = request.message;
+                const requestId = doc.id;
 
-                // Display the help request
                 helpRequests.innerHTML += `
-                    <div>
-                        <p>${message}</p>
-                        <button class="helped-btn" data-id="${doc.id}">Helped</button>
+                    <div class="alert alert-info d-flex justify-content-between align-items-center">
+                        <span>${request.message}</span>
+                        <button class="btn btn-sm btn-success helped-btn" data-id="${requestId}">Helped</button>
                     </div>
                 `;
             });
 
             // Handle 'Helped' button click
-            const helpedBtns = document.querySelectorAll('.helped-btn');
-            helpedBtns.forEach(button => {
+            document.querySelectorAll('.helped-btn').forEach(button => {
                 button.addEventListener('click', async () => {
                     const requestId = button.getAttribute('data-id');
-
-                    // Delete the request from Firestore after it's helped
                     await db.collection('help_requests').doc(requestId).delete();
                 });
             });
