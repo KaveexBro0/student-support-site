@@ -7,12 +7,12 @@ import {
 import { 
     collection, 
     addDoc, 
-    getDocs, 
     deleteDoc, 
     doc, 
     serverTimestamp, 
-    orderBy, 
-    onSnapshot 
+    onSnapshot, 
+    query, 
+    orderBy 
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
 // Handle Student Help Request
@@ -25,17 +25,16 @@ document.getElementById('help-btn').addEventListener('click', async () => {
     }
 
     try {
-        // Save the request to Firestore
         await addDoc(collection(db, 'help_requests'), {
             pcId: pcId,
             message: `Student at PC ID: ${pcId} needs help!`,
-            timestamp: serverTimestamp(),
+            timestamp: serverTimestamp()
         });
-
         alert('Your request has been sent.');
         document.getElementById('pc-id').value = '';
     } catch (error) {
         console.error('Error submitting request:', error);
+        alert('Failed to send request: ' + error.message);
     }
 });
 
@@ -48,19 +47,22 @@ document.getElementById('login-btn').addEventListener('click', async () => {
         await signInWithEmailAndPassword(auth, email, password);
         alert('Login successful!');
     } catch (error) {
+        console.error('Login error:', error.code, error.message);
         alert('Login failed: ' + error.message);
     }
 });
 
 // Monitor Admin Login State
 onAuthStateChanged(auth, (user) => {
+    const loginCard = document.getElementById('admin-login-card');
+    const dashboardCard = document.getElementById('admin-dashboard-card');
     if (user) {
-        document.getElementById('admin-login-card').style.display = 'none';
-        document.getElementById('admin-dashboard-card').style.display = 'block';
-        getHelpRequests(); // Load help requests after login
+        loginCard.classList.add('d-none');
+        dashboardCard.classList.remove('d-none');
+        getHelpRequests();
     } else {
-        document.getElementById('admin-login-card').style.display = 'block';
-        document.getElementById('admin-dashboard-card').style.display = 'none';
+        loginCard.classList.remove('d-none');
+        dashboardCard.classList.add('d-none');
     }
 });
 
@@ -68,32 +70,37 @@ onAuthStateChanged(auth, (user) => {
 function getHelpRequests() {
     const helpRequestsContainer = document.getElementById('help-requests');
 
-    onSnapshot(collection(db, 'help_requests'), (snapshot) => {
-        helpRequestsContainer.innerHTML = ''; // Clear previous requests
-
-        snapshot.forEach(docSnap => {
-            const request = docSnap.data();
-            const requestId = docSnap.id;
-
-            const requestElement = document.createElement('div');
-            requestElement.classList.add('alert', 'alert-info', 'd-flex', 'justify-content-between', 'align-items-center');
-            requestElement.innerHTML = `
-                <span>${request.message}</span>
-                <button class="btn btn-sm btn-success helped-btn" data-id="${requestId}">Helped</button>
-            `;
-            helpRequestsContainer.appendChild(requestElement);
-        });
-
-        // Attach event listeners to "Helped" buttons
-        document.querySelectorAll('.helped-btn').forEach(button => {
-            button.addEventListener('click', async () => {
-                const requestId = button.getAttribute('data-id');
-                try {
-                    await deleteDoc(doc(db, 'help_requests', requestId));
-                } catch (error) {
-                    console.error('Error deleting request:', error);
-                }
+    // Single event listener for all "Helped" buttons
+    helpRequestsContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('helped-btn')) {
+            const requestId = e.target.getAttribute('data-id');
+            deleteDoc(doc(db, 'help_requests', requestId)).catch(error => {
+                console.error('Error deleting request:', error);
             });
-        });
+        }
+    });
+
+    const q = query(collection(db, 'help_requests'), orderBy('timestamp', 'desc'));
+    onSnapshot(q, (snapshot) => {
+        helpRequestsContainer.innerHTML = '';
+        if (snapshot.empty) {
+            helpRequestsContainer.innerHTML = '<p class="text-muted">No new requests yet!</p>';
+        } else {
+            snapshot.forEach(docSnap => {
+                const request = docSnap.data();
+                const requestId = docSnap.id;
+                const timestamp = request.timestamp;
+                const date = timestamp ? new Date(timestamp.seconds * 1000) : new Date();
+                const timeString = date.toLocaleTimeString();
+
+                const requestElement = document.createElement('div');
+                requestElement.classList.add('alert', 'alert-info', 'd-flex', 'justify-content-between', 'align-items-center');
+                requestElement.innerHTML = `
+                    <span>${request.message} - ${timeString}</span>
+                    <button class="btn btn-sm btn-success helped-btn" data-id="${requestId}">Helped</button>
+                `;
+                helpRequestsContainer.appendChild(requestElement);
+            });
+        }
     });
 }
