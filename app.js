@@ -97,9 +97,10 @@ async function requestNotificationPermission() {
     try {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
-            const token = await getToken(messaging, { vapidKey: 'YOUR_VAPID_KEY_HERE' }); // Replace with your VAPID key
+            const token = await getToken(messaging, { 
+                vapidKey: 'BN8_pjYV0tMuk9e6QFHGWYAkfsFSvy4IZvu6_WeNnu4UQOoo6eh8EHx_4UyOiEgixb-emTP8RGLgEpa31C27XFM' 
+            });
             console.log('Notification token:', token);
-            // Save this token to Firestore for the admin to receive notifications
             await addDoc(collection(db, 'admin_tokens'), { token, userId: auth.currentUser.uid });
         }
     } catch (error) {
@@ -117,7 +118,7 @@ onAuthStateChanged(auth, (user) => {
         dashboardCard.classList.remove('d-none');
         if (!unsubscribe) {
             unsubscribe = getHelpRequests();
-            requestNotificationPermission(); // Request permission on login
+            requestNotificationPermission();
         }
     } else {
         loginCard.classList.remove('d-none');
@@ -149,6 +150,35 @@ function showNotification(message, timestamp) {
         notification.classList.add('slide-up');
         setTimeout(() => notification.remove(), 300);
     }, 5000);
+}
+
+// Send Push Notification to Admin
+async function sendPushNotification(message, timeString) {
+    const adminTokensSnapshot = await getDocs(collection(db, 'admin_tokens'));
+    const tokens = adminTokensSnapshot.docs.map(doc => doc.data().token);
+
+    if (tokens.length === 0) return;
+
+    const payload = {
+        notification: {
+            title: 'New Help Request',
+            body: `${message} - ${timeString}`
+        }
+    };
+
+    tokens.forEach(token => {
+        fetch('https://fcm.googleapis.com/fcm/send', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'key=YOUR_SERVER_KEY_HERE', // Replace with your Server Key
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                to: token,
+                ...payload
+            })
+        }).catch(error => console.error('Error sending push notification:', error));
+    });
 }
 
 // Fetch & Display Help Requests in Real-time
@@ -185,8 +215,8 @@ function getHelpRequests() {
                 
                 if (!displayedRequests.has(requestId)) {
                     requestElement.classList.add('slide-in');
-                    showNotification(request.message, timestamp); // In-app notification
-                    sendPushNotification(request.message, timeString); // System notification
+                    showNotification(request.message, timestamp);
+                    sendPushNotification(request.message, timeString);
                 }
 
                 requestElement.innerHTML = `
@@ -197,34 +227,5 @@ function getHelpRequests() {
                 displayedRequests.add(requestId);
             });
         }
-    });
-}
-
-// Send Push Notification to Admin
-async function sendPushNotification(message, timeString) {
-    const adminTokensSnapshot = await getDocs(collection(db, 'admin_tokens'));
-    const tokens = adminTokensSnapshot.docs.map(doc => doc.data().token);
-
-    if (tokens.length === 0) return;
-
-    const payload = {
-        notification: {
-            title: 'New Help Request',
-            body: `${message} - ${timeString}`
-        }
-    };
-
-    tokens.forEach(token => {
-        fetch('https://fcm.googleapis.com/fcm/send', {
-            method: 'POST',
-            headers: {
-                'Authorization': 'key=YOUR_SERVER_KEY_HERE', // Replace with your FCM Server Key
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                to: token,
-                ...payload
-            })
-        }).catch(error => console.error('Error sending push notification:', error));
     });
 }
