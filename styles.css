@@ -67,6 +67,22 @@ h2 {
     }
 }
 
+/* Slide-Out Animation for Removed Requests */
+.slide-out {
+    animation: slideOut 0.3s ease-in forwards;
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+}
+
 /* Smooth Transition for Card Visibility */
 #admin-login-card, #admin-dashboard-card {
     transition: opacity 0.3s ease-in-out;
