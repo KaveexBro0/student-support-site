@@ -32,7 +32,7 @@ toggleButton.addEventListener('click', () => {
 });
 
 // Initialize Notification Sound (File in root)
-const notificationSound = new Audio('https://github.com/your-username/your-repo/raw/main/notification-2-269292.mp3');
+const notificationSound = new Audio('https://github.com/KaveexBro0/your-repo/raw/main/notification-2-269292.mp3');
 
 // Handle Student Help Request
 document.getElementById('help-btn').addEventListener('click', async () => {
