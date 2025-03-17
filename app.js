@@ -33,7 +33,7 @@ toggleButton.addEventListener('click', () => {
 
 // Initialize Notification Sound
 const notificationSound = new Audio('https://github.com/KaveexBro0/student-support-site/raw/main/notification-2-269292.mp3');
-notificationSound.volume = 0.5; // Set volume to 50% (adjust as needed)
+notificationSound.volume = 0.5;
 
 // Unlock audio on first interaction
 let isAudioUnlocked = false;
@@ -46,7 +46,7 @@ document.body.addEventListener('click', () => {
             console.log('Audio unlocked for mobile');
         }).catch(error => console.log('Initial audio unlock failed:', error));
     }
-}, { once: true }); // Run only once
+}, { once: true });
 
 // Handle Student Help Request
 document.getElementById('help-btn').addEventListener('click', async () => {
