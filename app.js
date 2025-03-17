@@ -31,8 +31,22 @@ toggleButton.addEventListener('click', () => {
     toggleButton.textContent = newTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
 });
 
-// Initialize Notification Sound (File in root)
+// Initialize Notification Sound
 const notificationSound = new Audio('https://github.com/KaveexBro0/student-support-site/raw/main/notification-2-269292.mp3');
+notificationSound.volume = 0.5; // Set volume to 50% (adjust as needed)
+
+// Unlock audio on first interaction
+let isAudioUnlocked = false;
+document.body.addEventListener('click', () => {
+    if (!isAudioUnlocked) {
+        notificationSound.play().then(() => {
+            notificationSound.pause();
+            notificationSound.currentTime = 0;
+            isAudioUnlocked = true;
+            console.log('Audio unlocked for mobile');
+        }).catch(error => console.log('Initial audio unlock failed:', error));
+    }
+}, { once: true }); // Run only once
 
 // Handle Student Help Request
 document.getElementById('help-btn').addEventListener('click', async () => {
@@ -231,10 +245,11 @@ function getHelpRequests() {
                     requestElement.classList.add('slide-in');
                     showNotification(request.message, timestamp);
                     sendPushNotification(request.message, timeString);
-                    notificationSound.play().catch(error => {
-                        console.log('Audio playback failed:', error);
-                        // Likely due to autoplay policy; sound will play after user interaction
-                    });
+                    if (isAudioUnlocked) {
+                        notificationSound.play().catch(error => {
+                            console.log('Audio playback failed:', error);
+                        });
+                    }
                 }
 
                 requestElement.innerHTML = `
