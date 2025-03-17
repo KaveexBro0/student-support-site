@@ -1,51 +1,51 @@
 :root {
     /* Light mode defaults */
-    --bg-color: #f4f4f4;
-    --text-color: #333;
-    --card-bg: #fff;
-    --navbar-bg: #f8f9fa;
-    --primary-btn-bg: #0d6efd;
+    --bg-color: #f0f4ff;
+    --text-color: #2d2d2d;
+    --card-bg: linear-gradient(135deg, #ffffff, #e8ecef);
+    --navbar-bg: linear-gradient(90deg, #6b48ff, #ff6f91);
+    --primary-btn-bg: linear-gradient(45deg, #ff6f91, #ffcc70);
     --primary-btn-text: #fff;
-    --success-btn-bg: #198754;
+    --success-btn-bg: #00ddeb;
     --success-btn-text: #fff;
-    --danger-btn-bg: #dc3545;
+    --danger-btn-bg: #ff479d;
     --danger-btn-text: #fff;
-    --warning-btn-bg: #ffc107;
-    --warning-btn-text: #000;
-    --alert-info-bg: #cce5ff;
-    --alert-info-text: #0c5460;
-    --notification-bg: #0d6efd;
+    --warning-btn-bg: #ffcc70;
+    --warning-btn-text: #2d2d2d;
+    --alert-info-bg: rgba(0, 221, 235, 0.2);
+    --alert-info-text: #2d2d2d;
+    --notification-bg: linear-gradient(45deg, #6b48ff, #00ddeb);
     --notification-text: #fff;
     --input-bg: #fff;
-    --input-text: #333;
-    --input-border: #ced4da;
+    --input-text: #2d2d2d;
+    --input-border: #d1d5db;
 }
 
 [data-theme="dark"] {
     /* Dark mode overrides */
-    --bg-color: #1a1a1a;
+    --bg-color: #1a1a2e;
     --text-color: #e0e0e0;
-    --card-bg: #2c2c2c;
-    --navbar-bg: #333;
-    --primary-btn-bg: #4a90e2;
+    --card-bg: linear-gradient(135deg, #2a2a3e, #3b3b4f);
+    --navbar-bg: linear-gradient(90deg, #4831d4, #cc2b73);
+    --primary-btn-bg: linear-gradient(45deg, #cc2b73, #f5a623);
     --primary-btn-text: #fff;
-    --success-btn-bg: #28a745;
+    --success-btn-bg: #00b4cc;
     --success-btn-text: #fff;
-    --danger-btn-bg: #dc3545;
+    --danger-btn-bg: #e91e63;
     --danger-btn-text: #fff;
-    --warning-btn-bg: #ffca2c;
-    --warning-btn-text: #000;
-    --alert-info-bg: #375a7f;
+    --warning-btn-bg: #f5a623;
+    --warning-btn-text: #fff;
+    --alert-info-bg: rgba(0, 180, 204, 0.2);
     --alert-info-text: #e0e0e0;
-    --notification-bg: #4a90e2;
+    --notification-bg: linear-gradient(45deg, #4831d4, #00b4cc);
     --notification-text: #fff;
-    --input-bg: #333;
+    --input-bg: #2a2a3e;
     --input-text: #e0e0e0;
-    --input-border: #555;
+    --input-border: #4b4b6f;
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0;
@@ -54,50 +54,68 @@ body {
 }
 
 .container {
-    width: 80%;
-    max-width: 800px;
+    width: 90%;
+    max-width: 900px;
 }
 
 .navbar {
-    background-color: var(--navbar-bg);
-    transition: background-color 0.3s ease;
+    background: var(--navbar-bg);
+    padding: 1rem;
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-brand {
-    color: var(--text-color);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.trendy-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.trendy-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
 h2 {
     color: var(--text-color);
+    font-weight: 600;
+    font-size: 1.8rem;
 }
 
-.card {
-    background-color: var(--card-bg);
-    border-radius: 8px;
-    transition: background-color 0.3s ease;
+.form-label {
+    font-weight: 600;
+    color: var(--text-color);
 }
 
-.card:hover {
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-}
-
-.form-control {
-    background-color: var(--input-bg);
+.trendy-input {
+    background: var(--input-bg);
     color: var(--input-text);
-    border-color: var(--input-border);
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    border: 2px solid var(--input-border);
+    border-radius: 12px;
+    padding: 0.75rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.form-control:focus {
-    background-color: var(--input-bg);
-    color: var(--input-text);
+.trendy-input:focus {
     border-color: var(--primary-btn-bg);
+    box-shadow: 0 0 8px rgba(255, 111, 145, 0.5);
+    outline: none;
 }
 
 #help-requests .alert {
     margin-top: 10px;
-    background-color: var(--alert-info-bg);
+    background: var(--alert-info-bg);
     color: var(--alert-info-text);
+    border-radius: 12px;
+    padding: 1rem;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -107,139 +125,112 @@ h2 {
 }
 
 .notification {
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    opacity: 0.9;
-    background-color: var(--notification-bg);
+    background: var(--notification-bg);
     color: var(--notification-text);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    opacity: 0.95;
+    font-weight: 600;
 }
 
-/* Fade-In Animation for Cards */
+/* Button Styles */
+.btn {
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    font-weight: 600;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+}
+
+.btn-gradient {
+    background: var(--primary-btn-bg);
+    color: var(--primary-btn-text);
+    border: none;
+}
+
+.btn-success {
+    background: var(--success-btn-bg);
+    color: var(--success-btn-text);
+    border: none;
+}
+
+.btn-danger {
+    background: var(--danger-btn-bg);
+    color: var(--danger-btn-text);
+    border: none;
+}
+
+.btn-warning {
+    background: var(--warning-btn-bg);
+    color: var(--warning-btn-text);
+    border: none;
+}
+
+.btn-neon {
+    background: transparent;
+    color: var(--success-btn-bg);
+    border: 2px solid var(--success-btn-bg);
+    box-shadow: 0 0 10px var(--success-btn-bg);
+}
+
+.btn-outline-neon {
+    background: transparent;
+    color: #fff;
+    border: 2px solid #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* Animations */
 .fade-in {
     opacity: 0;
     animation: fadeIn 0.5s ease-in forwards;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* Button Styles */
-.btn {
-    transition: transform 0.2s ease, background-color 0.3s ease, color 0.3s ease;
-}
-
-.btn-primary {
-    background-color: var(--primary-btn-bg);
-    color: var(--primary-btn-text);
-    border-color: var(--primary-btn-bg);
-}
-
-.btn-success {
-    background-color: var(--success-btn-bg);
-    color: var(--success-btn-text);
-    border-color: var(--success-btn-bg);
-}
-
-.btn-danger {
-    background-color: var(--danger-btn-bg);
-    color: var(--danger-btn-text);
-    border-color: var(--danger-btn-bg);
-}
-
-.btn-warning {
-    background-color: var(--warning-btn-bg);
-    color: var(--warning-btn-text);
-    border-color: var(--warning-btn-bg);
-}
-
-.btn-outline-secondary {
-    color: var(--text-color);
-    border-color: var(--text-color);
-}
-
-.btn:hover {
-    transform: scale(1.05);
-}
-
-.btn:active {
-    transform: scale(0.95);
-}
-
-/* Slide-In Animation for List Items */
 .slide-in {
     animation: slideIn 0.3s ease-out forwards;
 }
 
 @keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateX(50px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
-/* Slide-Out Animation for List Items */
-.slide-out {
-    animation: slideOut 0.3s ease-in forwards;
-}
-
-@keyframes slideOut {
-    from {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(-100%);
-    }
-}
-
-/* Slide-Down Animation for Notifications */
 .slide-down {
     animation: slideDown 0.3s ease-out forwards;
 }
 
 @keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-100%);
-    }
-    to {
-        opacity: 0.9;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-50px); }
+    to { opacity: 0.95; transform: translateY(0); }
 }
 
-/* Slide-Up Animation for Notifications */
 .slide-up {
     animation: slideUp 0.3s ease-in forwards;
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0.9;
-        transform: translateY(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateY(-100%);
-    }
-}
-
-/* Smooth Transition for Card Visibility */
-#admin-login-card, #admin-dashboard-card {
-    transition: opacity 0.3s ease-in-out;
+    from { opacity: 0.95; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-50px); }
 }
 
 .d-none {
     opacity: 0;
     pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
 }
 
 :not(.d-none) {
