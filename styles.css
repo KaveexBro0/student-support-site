@@ -35,7 +35,7 @@
     --danger-btn-text: #fff;
     --warning-btn-bg: #f5a623;
     --warning-btn-text: #fff;
-    --alert-info-bg: rgba(0, 180, 204, 0.2);
+    --alert-info-bg: rgba(0, 180, 204, 0.3);
     --alert-info-text: #e0e0e0;
     --notification-bg: linear-gradient(45deg, #4831d4, #00b4cc);
     --notification-text: #fff;
@@ -117,6 +117,7 @@ h2 {
     border-radius: 12px;
     padding: 1rem;
     transition: background-color 0.3s ease, color 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 /* Notification Styles */
@@ -146,24 +147,28 @@ h2 {
     background: var(--primary-btn-bg);
     color: var(--primary-btn-text);
     border: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .btn-success {
     background: var(--success-btn-bg);
     color: var(--success-btn-text);
     border: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .btn-danger {
     background: var(--danger-btn-bg);
     color: var(--danger-btn-text);
     border: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .btn-warning {
     background: var(--warning-btn-bg);
     color: var(--warning-btn-text);
     border: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .btn-neon {
@@ -171,6 +176,7 @@ h2 {
     color: var(--success-btn-bg);
     border: 2px solid var(--success-btn-bg);
     box-shadow: 0 0 10px var(--success-btn-bg);
+    text-shadow: 0 0 5px var(--success-btn-bg);
 }
 
 .btn-outline-neon {
@@ -178,6 +184,7 @@ h2 {
     color: #fff;
     border: 2px solid #fff;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
 }
 
 .btn:hover {
@@ -236,4 +243,12 @@ h2 {
 :not(.d-none) {
     opacity: 1;
     pointer-events: auto;
+}
+
+/* Debug Theme Indicator */
+#theme-debug {
+    font-weight: 600;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
 }
