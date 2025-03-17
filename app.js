@@ -20,15 +20,20 @@ import { getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.6.1/fi
 
 // Dark Mode Toggle
 const toggleButton = document.getElementById('dark-mode-toggle');
+const themeDebug = document.getElementById('theme-debug');
 const currentTheme = localStorage.getItem('theme') || 'light';
 document.documentElement.setAttribute('data-theme', currentTheme);
 toggleButton.textContent = currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+themeDebug.textContent = `Current Theme: ${currentTheme}`;
+themeDebug.style.display = 'block';
 
 toggleButton.addEventListener('click', () => {
     const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
     toggleButton.textContent = newTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+    themeDebug.textContent = `Current Theme: ${newTheme}`;
+    console.log(`Switched to ${newTheme} mode`);
 });
 
 // Initialize Notification Sound
