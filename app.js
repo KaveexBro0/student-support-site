@@ -31,6 +31,9 @@ toggleButton.addEventListener('click', () => {
     toggleButton.textContent = newTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
 });
 
+// Initialize Notification Sound (File in root)
+const notificationSound = new Audio('https://github.com/your-username/your-repo/raw/main/notification-2-269292.mp3');
+
 // Handle Student Help Request
 document.getElementById('help-btn').addEventListener('click', async () => {
     const pcId = document.getElementById('pc-id').value.trim();
@@ -228,6 +231,10 @@ function getHelpRequests() {
                     requestElement.classList.add('slide-in');
                     showNotification(request.message, timestamp);
                     sendPushNotification(request.message, timeString);
+                    notificationSound.play().catch(error => {
+                        console.log('Audio playback failed:', error);
+                        // Likely due to autoplay policy; sound will play after user interaction
+                    });
                 }
 
                 requestElement.innerHTML = `
@@ -240,16 +247,3 @@ function getHelpRequests() {
         }
     });
 }
-// Replace: const notificationSound = new Audio('/sounds/notification.mp3');
-function playNotificationSound() {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    oscillator.type = 'sine'; // Waveform type (sine, square, sawtooth, triangle)
-    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); // Frequency in Hz
-    oscillator.connect(audioCtx.destination);
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.2); // Play for 0.2 seconds
-}
-
-// In getHelpRequests(), replace notificationSound.play() with:
-playNotificationSound();
