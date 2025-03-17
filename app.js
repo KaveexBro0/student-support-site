@@ -240,3 +240,16 @@ function getHelpRequests() {
         }
     });
 }
+// Replace: const notificationSound = new Audio('/sounds/notification.mp3');
+function playNotificationSound() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    oscillator.type = 'sine'; // Waveform type (sine, square, sawtooth, triangle)
+    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); // Frequency in Hz
+    oscillator.connect(audioCtx.destination);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.2); // Play for 0.2 seconds
+}
+
+// In getHelpRequests(), replace notificationSound.play() with:
+playNotificationSound();
